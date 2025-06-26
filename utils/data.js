@@ -1,13 +1,15 @@
-const url_base = 'http://localhost:1234/test'
+import 'dotenv/config.js';
+
+const { URL_BASE }  = process.env
 
 export const DATA = {
     urlApiBinance: {
-        obtenerPrecio: `${url_base}/obtener-precio`,
-        tradeNuevo: `${url_base}/iniciar-trade-nuevo`,
-        posicionesAbiertas: `${url_base}/posiciones-abiertas`,
-        eliminarReducirTrade: `${url_base}/eliminar-reducir-trade`,
-        cerrarOrdenes: `${url_base}/cerrar-ordenes`,
-        trailingstop: `${url_base}/trailingstop-trade`,
+        obtenerPrecio: `${URL_BASE}/obtener-precio`,
+        tradeNuevo: `${URL_BASE}/iniciar-trade-nuevo`,
+        posicionesAbiertas: `${URL_BASE}/posiciones-abiertas`,
+        eliminarReducirTrade: `${URL_BASE}/eliminar-reducir-trade`,
+        cerrarOrdenes: `${URL_BASE}/cerrar-ordenes`,
+        trailingstop: `${URL_BASE}/trailingstop-trade`,
     },
     Trading:{
         Future:{
