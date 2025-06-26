@@ -18,13 +18,15 @@ export const DATA = {
                     symbol: 'BTCUSDT',
                     leverage: 1,
                     priceContract: 100,
-                    position: 1200
+                    position: 1200,
+                    decimal: 1
                 },
                 ETH:{
                     symbol: 'ETHUSDT',
                     leverage: 5,
                     priceContract: 100,
-                    position: 25
+                    position: 25,
+                    decimal: 2
                 }
             },
             COINM:{
