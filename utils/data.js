@@ -1,4 +1,4 @@
-const url_base = 'http://localhost:1234/online'
+const url_base = 'http://localhost:1234/test'
 
 export const DATA = {
     urlApiBinance: {
@@ -16,7 +16,7 @@ export const DATA = {
                     symbol: 'BTCUSDT',
                     leverage: 1,
                     priceContract: 100,
-                    position: 120
+                    position: 1200
                 },
                 ETH:{
                     symbol: 'ETHUSDT',

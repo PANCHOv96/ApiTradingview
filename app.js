@@ -14,12 +14,7 @@ export function createAPP({string}){
     server.use('/api', ControlarApi);
     server.use(controlarApi)
 
-    server.get('/',(req,res)=>{
-        res.status(200).json({
-            status: 'EN LINEA'
-        })
-    })
-
+    server.use('/',mainRoutes)
     server.use(Redireccionamiento)
     server.use('/bibot',BiBOT)
     server.get('/*',errorRoutes)

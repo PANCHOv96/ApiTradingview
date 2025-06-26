@@ -6,7 +6,8 @@ import {
     EliminarReducirPosicion,
     CerrarOrdenes,
     Trailingstop,
-    reduceContract
+    reduceContract,
+    sendSignal
 } from "../utils/functions.js";
 
 export const BiBOT = Router()
@@ -29,13 +30,14 @@ BiBOT.get('/',async (req,res)=>{
 // ✅ INICIAR OPERACION BUY 
 BiBOT.get('/iniciar-operacion/BUY',async (req,res)=>{
     try{
-        const { nameContract, coinTrade, stopPrice, priceLimit, partialClosure} = req.query
+        const { nameContract, coinTrade, stopPrice, priceLimit, partialClosure } = req.query
         if(coinTrade && stopPrice && priceLimit && partialClosure){
             const quantity = await ObtenerCantidadContratos({nameContract,coinTrade:coinTrade.toUpperCase()});
             await TradeNuevo({nameContract,coinTrade,side:'BUY',quantity})
             const reducir = reduceContract({ nameContract, quantity, partialClosure});
             await Trailingstop({nameContract,coinTrade,side:'SELL',quantity:Math.abs(quantity),stopPrice:parseFloat(stopPrice)})
             await EliminarReducirPosicion({nameContract,coinTrade,side:'SELL',quantity:reducir,priceLimit:parseFloat(priceLimit)})
+            sendSignal({ nameContract, coinTrade, stopPrice, priceLimit, side:"BUY" });
             res.status(200).json({result:"OK"})
         }
     }
@@ -55,6 +57,7 @@ BiBOT.get('/iniciar-operacion/SELL',async (req,res)=>{
             const reducir = reduceContract({ nameContract, quantity, partialClosure});
             await Trailingstop({nameContract,coinTrade,side:'BUY',quantity:Math.abs(quantity),stopPrice:parseFloat(stopPrice)})
             await EliminarReducirPosicion({nameContract,coinTrade,side:'BUY',quantity:reducir,priceLimit:parseFloat(priceLimit)})
+            sendSignal({ nameContract, coinTrade, stopPrice, priceLimit, side:"SELL" });
             res.status(200).json({result:"OK"})
         }
     }

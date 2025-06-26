@@ -82,3 +82,14 @@ export function reduceContract({nameContract, quantity, partialClosure}){
     return reduce
 }
 
+export async function sendSignal({ nameContract, coinTrade, stopPrice, priceLimit, side }){
+    try{
+        const { symbol, leverage } = DATA.Trading.Future[nameContract][coinTrade];
+        axios.get(`http://localhost:1236/signal?nameContract=${nameContract}&symbol=${symbol}&stopPrice=${stopPrice}&priceLimit=${priceLimit}&side=${side}&leverage=${leverage}`)
+    }
+    catch(error){
+        console.log('REVENTO TELEGRAM API -- SIGNAL')
+    }
+}
+
+
