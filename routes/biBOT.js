@@ -116,5 +116,6 @@ BiBOT.get('/prueba',async(req,res)=>{
     console.log('stopPrice: ',stopPrice)
     console.log('priceLimit: ',priceLimit)
     console.log('partialClosure: ',partialClosure)
+    delete req.session.formData;
     res.status(200).json({result:'OK'})
 })
