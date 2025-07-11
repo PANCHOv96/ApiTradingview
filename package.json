@@ -5,7 +5,7 @@
   "main": "app.js",
   "type": "module",
   "scripts": {
-    "start-local": "node --watch runlocal.js",
+    "start-local": "node --watch runLocal.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
