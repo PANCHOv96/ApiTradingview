@@ -1,7 +1,7 @@
 
 export function Redireccionamiento(req, res, next) {
     if(req.method === 'POST' && req.body && Object.keys(req.body).length > 0){
-        const { nameContract, nameBot, operation, coinTrade, stopPrice, priceLimit, partialClosure, TLSP, TLSP0, TLSP1 } = req.body
+        const { nameContract, nameBot, operation, coinTrade, stopPrice, priceLimit, partialClosure } = req.body
         const toLowerNameContract = String(nameContract).toString().toLowerCase()
         const toLowerNameBot = String(nameBot).toString().toLowerCase()
         const toUpperNameContract = String(nameContract).toString().toUpperCase()
