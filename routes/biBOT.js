@@ -1,121 +1,28 @@
 import { Router } from "express";
-import { 
-    ObtenerCantidadContratos, 
-    TradeNuevo, 
-    PosicionesAbiertas, 
-    EliminarReducirPosicion,
-    CerrarOrdenes,
-    Trailingstop,
-    reduceContract,
-    sendSignal
-} from "../utils/functions.js";
+import { BiBotController } from "../controllers/biBOT.js";
 
-export const BiBOT = Router()
+export function createBiBotRoutes({ BiBotModel }){
+    const biBotRoutes = Router()
+    const biBotController = new BiBotController({ BiBotModel });
 
-// ✅ Rutas Disponibles
-BiBOT.get('/',async (req,res)=>{
-    res.status(200).json(
-        {
-            'RUTAS DISPONIBLES':{
-                "OPERACION BUY": "/iniciar-operacion/BUY", 
-                "OPERACION SELL": "/iniciar-operacion/SELL", 
-                "ELIMINAR / REDUCIR POSICION": "/cerrar-operacion", 
-                "TRAILING STOP": "/trailingstop-trade", 
-                "PRUEBA": "/prueba", 
-            }
-        }
-    )
-})
+    // ✅ RUTAS DISPONIBLES
+    biBotRoutes.get('/', biBotController.rutes)
 
-// ✅ INICIAR OPERACION BUY 
-BiBOT.get('/iniciar-operacion/BUY',async (req,res)=>{
-    try{
-        const { nameContract, coinTrade, stopPrice, priceLimit, partialClosure } = req.query
-        if(coinTrade && stopPrice && priceLimit && partialClosure){
-            const quantity = await ObtenerCantidadContratos({nameContract,coinTrade});
-            await TradeNuevo({nameContract,coinTrade,side:'BUY',quantity})
-            const reducir = reduceContract({ nameContract, quantity, partialClosure});
-            await Trailingstop({nameContract,coinTrade,side:'SELL',quantity:Math.abs(quantity),stopPrice:parseFloat(stopPrice)})
-            await EliminarReducirPosicion({nameContract,coinTrade,side:'SELL',quantity:reducir,priceLimit:parseFloat(priceLimit)})
-            sendSignal({ nameContract, coinTrade, stopPrice, priceLimit, side:"BUY" });
-            res.status(200).json({result:"OK"})
-        }
-    }
-    catch(error){
-        console.log(`/iniciar-operacion/BUY ERROR: ${error}`)
-        res.status(404).json({result:"Operacion BUY Rechazada"})
-    }
-})
+    // ✅ INICIAR OPERACION BUY 
+    biBotRoutes.get('/iniciar-operacion/BUY', biBotController.startOperationBUY)
 
-// ✅ INICIAR OPERACION SELL
-BiBOT.get('/iniciar-operacion/SELL',async (req,res)=>{
-    try{
-        const { nameContract, coinTrade, stopPrice, priceLimit, partialClosure } = req.query
-        if(coinTrade && stopPrice && priceLimit && partialClosure){
-            const quantity = await ObtenerCantidadContratos({nameContract,coinTrade});
-            await TradeNuevo({nameContract,coinTrade,side:'SELL',stopPrice,quantity})
-            const reducir = reduceContract({ nameContract, quantity, partialClosure});
-            await Trailingstop({nameContract,coinTrade,side:'BUY',quantity:Math.abs(quantity),stopPrice:parseFloat(stopPrice)})
-            await EliminarReducirPosicion({nameContract,coinTrade,side:'BUY',quantity:reducir,priceLimit:parseFloat(priceLimit)})
-            sendSignal({ nameContract, coinTrade, stopPrice, priceLimit, side:"SELL" });
-            res.status(200).json({result:"OK"})
-        }
-    }
-    catch(error){
-        console.log(`/iniciar-operacion/SELL ERROR: ${error}`)
-        res.status(404).json({result:"Operacion SELL Rechazada"})
-    }
-})
+    // ✅ INICIAR OPERACION SELL
+    biBotRoutes.get('/iniciar-operacion/SELL',biBotController.startOperationSELL)
 
-// ✅ CERRAR OPERACION POR CRUCE
-BiBOT.get('/cerrar-operacion',async (req,res)=>{
-    try{
-        const { nameContract, coinTrade } = req.query
-        if(coinTrade){
-            const quantity = await PosicionesAbiertas({nameContract,coinTrade});
-            const side = quantity > 0 ? "SELL" : 'BUY';
-            if(quantity != 0){
-                await EliminarReducirPosicion({nameContract,coinTrade,side,quantity:Math.abs(quantity)});
-            }
-            await CerrarOrdenes({nameContract,coinTrade})
-            res.status(200).json({result:"OK"})
-        }
-    }
-    catch(error){
-        console.log(`/cerrar-operacion ERROR: ${error}`)
-        res.status(404).json({result:"Erro al cerrar la operacion Abierta"})
-    }
-})
+    // ✅ CERRAR OPERACION POR CRUCE
+    biBotRoutes.get('/cerrar-operacion', biBotController.closeOperation)
 
-// ✅ TRAILING STOP OPERACION EN GANANCIA
-BiBOT.get('/trailingstop-trade',async (req,res)=>{
-    try{
-        const { nameContract, coinTrade, stopPrice} = req.query
-        if(coinTrade && stopPrice){
-            const quantity = await PosicionesAbiertas({nameContract,coinTrade});
-            const side = quantity > 0 ? "SELL" : 'BUY';
-            if (quantity != 0){
-                await CerrarOrdenes({nameContract,coinTrade})
-                await Trailingstop({nameContract,coinTrade,side,quantity:Math.abs(quantity),stopPrice:parseFloat(stopPrice)})
-            }
-            res.status(200).json({result:"OK"})
-        }
-    }
-    catch(error){
-        console.log(`/trailingstop-trade ERROR: ${error}`)
-        res.status(404).json({result:"Erro al crear el trailingstop"})
-    }
-})
+    // ✅ TRAILING STOP OPERACION EN GANANCIA
+    biBotRoutes.get('/trailingstop-trade',biBotController.trailingstopTrade)
 
-BiBOT.get('/prueba',async(req,res)=>{
-    console.log('PRUEBA DE COMO LLEGA LA INFORMACION')
-    const { nameContract, coinTrade, operation, stopPrice, priceLimit, partialClosure} = req.query
-    console.log('nameContract: ',nameContract)
-    console.log('coinTrade: ',coinTrade)
-    console.log('operation: ',operation)
-    console.log('stopPrice: ',stopPrice)
-    console.log('priceLimit: ',priceLimit)
-    console.log('partialClosure: ',partialClosure)
-    delete req.session.formData;
-    res.status(200).json({result:'OK'})
-})
+    // ✅ PRUEBA DE DATOS
+    biBotRoutes.get('/prueba',biBotController.testData)
+
+    return biBotRoutes;
+}
+
